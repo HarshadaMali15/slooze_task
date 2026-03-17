@@ -1,175 +1,293 @@
-## Slooze Food Ordering – Fullstack Take Home
+Food Ordering System (RBAC + Country-Based Access)
+-------------------------------------------------------
+# Project Overview
 
-This repo implements the Slooze take‑home assignment described in [`SDE Take Home Assignment.pdf`](./SDE%20Take%20Home%20Assignment.pdf):
+This is a full-stack web application that allows users to:
 
-- Fullstack food ordering app
-- Role‑based access (Admin / Manager / Member)
-- Country‑scoped access (India / America) for Managers & Members
-- Built with **NestJS + GraphQL + Prisma** and **Next.js + TypeScript + Tailwind + Apollo Client**
+* View restaurants and menu items
+* Create food orders
+* Checkout and make payments
+* Cancel orders
+* Manage payment methods
+
+The system is built with **Role-Based Access Control (RBAC)** and **Country-Based Data Restrictions** to ensure secure and controlled access.
+
+----------------------------------------------------
+
+# User Roles
+
+| User            | Role    | Country |
+| --------------- | ------- | ------- |
+| Nick Fury       | Admin   | Global  |
+| Captain Marvel  | Manager | India   |
+| Captain America | Manager | America |
+| Thanos          | Member  | India   |
+| Thor            | Member  | India   |
+| Travis          | Member  | America |
+
+----------------------------------------------
+
+# RBAC Permissions
+
+ Feature               | Admin | Manager | Member |
+------------------------------------------------------------
+ View Restaurants          Y         Y         Y
+ Create Order              Y         Y         Y
+ Checkout & Pay            Y         Y         N
+ Cancel Order              Y         Y         N
+ Update Payment Method     Y         N         N
+
+RBAC is implemented using **custom decorators and guards** in the backend.
+
+-----------------------------------------------------------
+
+# Country-Based Access
+
+* Managers and Members can only access data from their assigned country
+* Admin has global access
+
+# Example:
+
+* India Manager → Access only India data
+* America Member → Access only America data
+
+This is enforced using **middleware + query filtering logic**
+
+-----------------------------------------------
+
+# Tech Stack
+
+# Frontend
+
+* Next.js (App Router)
+* TypeScript
+
+# Backend
+
+* NestJS
+* GraphQL
+
+# Database
+
+* SQLite (dev.db)
+
+# ORM
+
+* Prisma
+
+# Other
+
+* JWT Authentication
+* Role Guards
+* Middleware
+
+-------------------------------------------------
+
+# Project Structure
+
+# Frontend
+
+src/
+ ├ app/
+ │   ├ login/
+ │   ├ orders/
+ │   ├ payment-methods/
+ │   ├ restaurants/
+ │   ├ layout.tsx
+ │   └ page.tsx
+ ├ lib/
+ │   └ apollo-client.ts
+```
+
+----------------------------------------------
+
+# Backend
+
+src/
+ ├ auth/
+ │   ├ auth.middleware.ts
+ │   ├ auth.module.ts
+ |   ├ auth.module.ts
+ |   ├ auth.resplver.ts
+ │   ├ auth.service.ts
+ │   ├ roles.guard.ts
+ │   ├ roles.decorator.ts
+ │   └ current-user.decorator.ts
+ │
+ ├ order/
+ |   ├ order.model.ts
+ │   ├ order.module.ts
+ │   ├ order.service.ts
+ │   ├ order.resolver.ts
+ │
+ ├ payment/
+ |   ├ payment.model.ts
+ │   ├ payment.module.ts
+ │   ├ payment.service.ts
+ │   ├ payment.resolver.ts
+ │
+ ├ restaurant/
+ |   ├ restaurant.model.ts
+ │   ├ restaurant.module.ts
+ │   ├ restaurant.service.ts
+ │   ├ restaurant.resolver.ts
+ │
+ ├ prisma.service.ts
+ ├ app.module.ts
+ ├ app.resolver.ts
+ └ main.ts
+
+-------------------------------------------------------
+
+# Database (Prisma)
+
+prisma/
+ ├ schema.prisma
+ ├ seed.ts
+ ├ migrations/
+ └ dev.db
+
+------------------------------------------------
+
+# Architecture
+
+Frontend (Next.js)
+        ↓
+GraphQL API (NestJS)
+        ↓
+Prisma ORM
+        ↓
+SQLite Database
+
+-----------------------------------------------------
+
+# Database Design
+
+Main Entities:
+
+* **User**
+
+  * id, name, role, country
+
+* **Restaurant**
+
+  * id, name, country
+
+* **MenuItem**
+
+  * id, name, price, restaurantId
+
+* **Order**
+
+  * id, userId, status, country, totalAmount
+
+* **OrderItem**
+
+  * id, orderId, menuItemId, quantity
+
+* **PaymentMethod**
+
+  * id, userId, type
 
 ---
 
-### 1. Tech Stack
+# API Endpoints (GraphQL)
 
-- **Backend**: NestJS 11, GraphQL (code‑first, Apollo driver), Prisma ORM (SQLite)
-- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Apollo Client 4
-- **Auth**: Email + password login → JWT, custom middleware + guards for RBAC + ReBAC
+# Auth
 
----
+* Login / Authentication
 
-### 2. Backend – Getting Started
+# Restaurant
 
-```bash
+* Get restaurants with menu items
+
+# Order
+
+* Create order
+* Add items to order
+* Checkout order
+* Cancel order
+
+# Payment
+
+* Update payment method
+
+--------------------------------------------------------------------
+
+# Getting Started
+
+# Install dependencies
+
+# Backend
+
+
 cd backend
 npm install
 
-# Prisma
-npx prisma migrate dev --name init
-npm run prisma:seed
 
-# Run backend (http://localhost:3000)
-npm run start:dev
-```
+# Frontend
 
-GraphQL Playground will be available at `http://localhost:3000/graphql`.
 
----
-
-### 3. Seeded Users & Roles
-
-All users have **password `password123`**.
-
-- **Admin (Nick Fury)**
-  - Email: `nick.fury@slooze.xyz`
-  - Role: `ADMIN`, Country: `INDIA`
-- **Managers**
-  - `captain.marvel@slooze.xyz` – Manager, INDIA
-  - `captain.america@slooze.xyz` – Manager, AMERICA
-- **Members**
-  - `thanos@slooze.xyz` – Member, INDIA
-  - `thor@slooze.xyz` – Member, INDIA
-  - `travis@slooze.xyz` – Member, AMERICA
-
-Role capabilities are implemented exactly as in the PDF:
-
-- View restaurants & menu items – **Admin / Manager / Member**
-- Create order – **Admin / Manager / Member**
-- Checkout & pay – **Admin / Manager only**
-- Cancel order – **Admin / Manager only**
-- Update payment method – **Admin only**
-
-Managers & Members are restricted to restaurants/orders/payment methods in **their own country**.
-
----
-
-### 4. Frontend – Getting Started
-
-```bash
 cd frontend
 npm install
 
-# Run Next.js on port 3001
-npm run dev -- --port 3001
-```
 
-Open `http://localhost:3001` – you will be redirected to `/login`.
+-----------------------------------------------------------
 
-The frontend talks to the backend GraphQL API at `http://localhost:3000/graphql` via Apollo Client.
-
----
-
-### 5. Frontend Routes & Flows
-
-- **`/login`**
-  - Login form with **pre‑filled credentials** (Nick Fury, Admin).
-  - You can change the email to any of the seeded users listed above to test different roles.
-  - On success, stores JWT + user (role, country) in `localStorage` and redirects to `/restaurants`.
-
-- **`/restaurants`**
-  - Lists restaurants & menu items (scoped by country for non‑admins).
-  - Allows building a simple cart and creating an order via `createOrder`.
-  - Header links:
-    - **My Orders** → `/orders`
-    - **Payment Methods** (Admin only) → `/payment-methods`
-    - **Logout** – clears token/user and returns to `/login`.
-
-- **`/orders`**
-  - Shows `myOrders` for the logged‑in user.
-  - Managers/Admins see **Checkout** and **Cancel** buttons per order:
-    - `checkoutOrder` is restricted to Admin/Manager.
-    - `cancelOrder` is restricted to Admin/Manager.
-
-- **`/payment-methods`** (Admin only)
-  - Lists all payment methods (admin can see org‑wide).
-  - Form to add a new payment method (`addPaymentMethod`), restricted to Admin.
-
----
-
-### 6. Architecture Overview
-
-- **Prisma schema**
-  - `User` with `role` (`ADMIN | MANAGER | MEMBER`) and `country` (`INDIA | AMERICA`)
-  - `Restaurant`, `MenuItem`, `Order`, `OrderItem`, `PaymentMethod`, `Payment`
-
-- **Auth & RBAC**
-  - `login` mutation → returns JWT.
-  - `AuthMiddleware` parses JWT and attaches `req.user`.
-  - `CurrentUser` decorator + `RolesGuard` enforce role checks.
-  - Service methods enforce additional ReBAC (country) and ownership rules.
-
----
-
-### 7. Testing with GraphQL
-
-Example queries (when backend is running at `http://localhost:3000/graphql`):
-
-```graphql
-# Login
-mutation {
-  login(email: "nick.fury@slooze.xyz", password: "password123") {
-    token
-    user {
-      id
-      role
-      country
-    }
-  }
-}
-```
-
-Use the returned token as:
-
-```json
-{
-  "Authorization": "Bearer <token>"
-}
-```
-
-in the GraphQL Playground HTTP headers, then:
-
-```graphql
-query {
-  restaurants {
-    id
-    name
-    country
-    menus {
-      id
-      name
-      price
-    }
-  }
-}
-```
-
-and the rest of the order/payment mutations as described in the code.
-
----
-
-### 8. Notes
-
-- Designed to be easy to run locally: SQLite DB (`prisma/dev.db`) and seeded data.
-- Backend & frontend are intentionally decoupled by port to mirror a real deployment.
-- The UI is intentionally kept clean and modern with Tailwind classes so you can iterate quickly on styling or branding.
+# Setup Database
 
 
+npx prisma migrate dev
+npx prisma db seed
+
+-----------------------------------------------------------
+
+# Run Application
+
+# Backend
+
+
+npm run start:dev
+
+
+# Frontend
+
+
+npm run dev
+
+--------------------------------------------------------
+
+# Access App
+
+* Frontend → http://localhost:3001
+* GraphQL → http://localhost:3000/graphql 
+
+----------------------------------------------------------
+
+# Key Features
+
+* Role-Based Access Control (RBAC)
+* Country-Based Data Restriction (Bonus)
+* GraphQL API with clean structure
+* Prisma ORM integration
+* Modular NestJS architecture
+* Secure authentication with middleware
+* Scalable and maintainable code
+
+----------------------------------------------------------
+
+# Submission Includes
+
+* GitHub Repository
+* README Documentation
+* Prisma Schema & Migrations
+* API (GraphQL) Implementation
+* Project Structure
+
+---------------------------------------------------
+
+# Author
+
+Harshada Mali
+
+-------------------------------------------------------
