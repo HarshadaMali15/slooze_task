@@ -2,6 +2,33 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AddToCartInput {
+  isShared: Boolean!
+  menuItemId: Int!
+  quantity: Int!
+}
+
+type Cart {
+  country: String!
+  createdAt: DateTime!
+  id: ID!
+  isShared: Boolean!
+  items: [CartItem!]!
+  menuItemName: String!
+  menuItemPrice: Float!
+  updatedAt: DateTime!
+  user: UserInfo
+  userId: Float
+}
+
+type CartItem {
+  id: Float!
+  menuItemId: Float!
+  menuItemName: String
+  menuItemPrice: Float
+  quantity: Float!
+}
+
 input CreateOrderItemInput {
   menuItemId: Int!
   quantity: Int!
@@ -25,10 +52,14 @@ type MenuItem {
 
 type Mutation {
   addPaymentMethod(brand: String!, last4: String!): PaymentMethod!
+  addToCart(input: AddToCartInput!): Cart!
   cancelOrder(orderId: Int!): Order!
   checkoutOrder(orderId: ID!, paymentMethodId: ID!): Payment!
+  clearCart(isShared: Boolean!): Cart!
   createOrder(items: [CreateOrderItemInput!]!, restaurantId: Int!): Order!
   login(email: String!, password: String!): LoginResponse!
+  removeFromCart(input: RemoveFromCartInput!): Cart!
+  updateCartItemQuantity(input: UpdateCartItemInput!): Cart!
 }
 
 type Order {
@@ -72,10 +103,21 @@ type PaymentMethod {
 }
 
 type Query {
+  getAllIndividualCarts: [Cart!]!
+  getAllSharedCarts: [Cart!]!
+  getCountryGroupCarts: [Cart!]!
+  getCountryIndividualCarts: [Cart!]!
+  getIndividualCart: Cart!
+  getSharedCart: Cart!
   hello: String!
   myOrders: [Order!]!
   myPaymentMethods: [PaymentMethod!]!
   restaurants: [Restaurant!]!
+}
+
+input RemoveFromCartInput {
+  cartItemId: Int!
+  isShared: Boolean!
 }
 
 type Restaurant {
@@ -83,6 +125,12 @@ type Restaurant {
   id: ID!
   menus: [MenuItem!]!
   name: String!
+}
+
+input UpdateCartItemInput {
+  cartItemId: Int!
+  isShared: Boolean!
+  quantity: Int!
 }
 
 type UserInfo {

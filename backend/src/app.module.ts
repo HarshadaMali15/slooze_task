@@ -9,6 +9,7 @@ import { RestaurantModule } from './restaurant/restaurant.module';
 import { AuthModule } from './auth/auth.module';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
+import { CartModule } from './cart/cart.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { PrismaService } from './prisma.service';
 
@@ -25,6 +26,7 @@ import { PrismaService } from './prisma.service';
     AuthModule,
     OrderModule,
     PaymentModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver, PrismaService, AuthMiddleware],
